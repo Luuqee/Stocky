@@ -11,9 +11,9 @@ module.exports = {
     const [, acao, tipo] = interaction.customId.split(':');
     const categoriaId = interaction.values[0];
 
-    const categorias = getCategorias(tipo);
+    const categorias = getCategorias();
     const categoria = categorias.find(c => c.id === categoriaId);
-    const itens = getItensDaCategoria(tipo, categoriaId);
+    const itens = getItensDaCategoria(categoriaId);
 
     if (!itens.length) {
       return interaction.editReply({
@@ -26,12 +26,7 @@ module.exports = {
     const select = new StringSelectMenuBuilder()
       .setCustomId(`bau_item:${acao}:${tipo}:${categoriaId}`)
       .setPlaceholder('Selecione um item...')
-      .addOptions(
-        itens.map(item => ({
-          label: item.nome,
-          value: item.id
-        }))
-      );
+      .addOptions(itens.map(item => ({ label: item.nome, value: item.id })));
 
     return interaction.editReply({
       embeds: [embedSelecionarItem(acao, categoria.nome, categoria.emoji)],

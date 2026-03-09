@@ -1,6 +1,7 @@
 const { ActionRowBuilder, ModalBuilder, TextInputBuilder, TextInputStyle, StringSelectMenuBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
-const { embedGerencia, embedSucesso, embedErro } = require('../utils/embeds');
-const { getCategorias, getItensDaCategoria, zerarBau, getLogs, removerItemDoCatalogo } = require('../utils/db');
+const { embedGerencia, embedSucesso, embedErro, embedInventario } = require('../utils/embeds');
+const { getCategorias, getItensDaCategoria, zerarBau, getLogs, removerItemDoCatalogo, getBau } = require('../utils/db');
+const config = require('../config.json');
 
 function rowMenuGerencia() {
   return new ActionRowBuilder().addComponents(
@@ -23,6 +24,20 @@ function rowMenuGerencia() {
   );
 }
 
+async function atualizarInventario(client, tipo) {
+  const canalInvId = tipo === 'gerencia' ? config.channels.inventarioGerencia : config.channels.inventarioMembros;
+  const canalInv = client.channels.cache.get(canalInvId);
+  if (!canalInv) return;
+  const bau = getBau(tipo);
+  const msgs = await canalInv.messages.fetch({ limit: 10 });
+  const msgBot = msgs.find(m => m.author.id === client.user.id);
+  if (msgBot) {
+    await msgBot.edit({ embeds: [embedInventario(bau, tipo)] });
+  } else {
+    await canalInv.send({ embeds: [embedInventario(bau, tipo)] });
+  }
+}
+
 module.exports = {
   type: 'select',
   customIds: ['ger_cat_adicionar', 'ger_cat_remover', 'ger_zerar_confirmar', 'ger_logs_tipo', 'ger_item_remover'],
@@ -31,9 +46,9 @@ module.exports = {
     const acao = interaction.customId;
 
     if (acao === 'ger_cat_adicionar') {
-      const [tipo, categoriaId] = interaction.values[0].split(':');
+      const categoriaId = interaction.values[0];
       const modal = new ModalBuilder()
-        .setCustomId(`ger_modal_adicionar:${tipo}:${categoriaId}`)
+        .setCustomId(`ger_modal_adicionar:${categoriaId}`)
         .setTitle('Adicionar Item ao Catalogo');
 
       modal.addComponents(
@@ -52,8 +67,8 @@ module.exports = {
 
     if (acao === 'ger_cat_remover') {
       await interaction.deferUpdate();
-      const [tipo, categoriaId] = interaction.values[0].split(':');
-      const itens = getItensDaCategoria(tipo, categoriaId);
+      const categoriaId = interaction.values[0];
+      const itens = getItensDaCategoria(categoriaId);
 
       if (!itens.length) {
         return interaction.editReply({
@@ -63,7 +78,7 @@ module.exports = {
       }
 
       const select = new StringSelectMenuBuilder()
-        .setCustomId(`ger_item_remover:${tipo}:${categoriaId}`)
+        .setCustomId(`ger_item_remover:${categoriaId}`)
         .setPlaceholder('Selecione o item para remover...')
         .addOptions(itens.map(item => ({ label: item.nome, value: item.id })));
 
@@ -75,10 +90,11 @@ module.exports = {
 
     if (acao.startsWith('ger_item_remover')) {
       await interaction.deferUpdate();
-      const [, tipo, categoriaId] = acao.split(':');
+      const [, categoriaId] = acao.split(':');
       const itemId = interaction.values[0];
-      const resultado = removerItemDoCatalogo(tipo, categoriaId, itemId);
 
+      // Remove do catálogo
+      const resultado = removerItemDoCatalogo(categoriaId, itemId);
       if (!resultado.sucesso) {
         return interaction.editReply({
           embeds: [embedErro('Erro', resultado.motivo)],
@@ -86,8 +102,29 @@ module.exports = {
         });
       }
 
+      // Remove do baú de membros e gerência também
+      const { removerItemDoBauCompleto } = require('../utils/db');
+      const bauMembros = getBau('membros');
+      const bauGerencia = getBau('gerencia');
+      const key = `${categoriaId}:${itemId}`;
+      if (bauMembros[key]) {
+        delete bauMembros[key];
+        const fs = require('fs');
+        const path = require('path');
+        fs.writeFileSync(path.join(__dirname, '..', 'data', 'bau-membros.json'), JSON.stringify(bauMembros, null, 2));
+      }
+      if (bauGerencia[key]) {
+        delete bauGerencia[key];
+        const fs = require('fs');
+        const path = require('path');
+        fs.writeFileSync(path.join(__dirname, '..', 'data', 'bau-gerencia.json'), JSON.stringify(bauGerencia, null, 2));
+      }
+
+      await atualizarInventario(client, 'membros');
+      await atualizarInventario(client, 'gerencia');
+
       return interaction.editReply({
-        embeds: [embedSucesso('Item removido!', 'Item removido do catalogo com sucesso.')],
+        embeds: [embedSucesso('Item removido!', 'Item removido do catalogo e dos baus com sucesso.')],
         components: [rowMenuGerencia()]
       });
     }
@@ -95,14 +132,19 @@ module.exports = {
     if (acao === 'ger_zerar_confirmar') {
       await interaction.deferUpdate();
       const tipo = interaction.values[0];
+
       if (tipo === 'ambos') {
         zerarBau('membros');
         zerarBau('gerencia');
+        await atualizarInventario(client, 'membros');
+        await atualizarInventario(client, 'gerencia');
       } else {
         zerarBau(tipo);
+        await atualizarInventario(client, tipo);
       }
+
       return interaction.editReply({
-        embeds: [embedSucesso('Bau zerado!', 'O bau foi resetado com sucesso.')],
+        embeds: [embedSucesso('Bau zerado!', 'O bau foi resetado e o inventario atualizado.')],
         components: [rowMenuGerencia()]
       });
     }

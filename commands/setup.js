@@ -1,22 +1,59 @@
 const { SlashCommandBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
-const { embedMenuPrincipal } = require('../utils/embeds');
+const { embedMenuPrincipal, embedGerencia } = require('../utils/embeds');
+const config = require('../config.json');
 
 module.exports = {
   data: new SlashCommandBuilder()
     .setName('setup')
-    .setDescription('Envia a mensagem fixa do baú no canal (use apenas uma vez)')
+    .setDescription('Envia a mensagem fixa no canal (use apenas uma vez)')
     .addStringOption(option =>
       option.setName('tipo')
-        .setDescription('Qual baú configurar?')
+        .setDescription('Qual painel configurar?')
         .setRequired(true)
         .addChoices(
           { name: '📦 Baú dos Membros', value: 'membros' },
-          { name: '🔐 Baú da Gerência', value: 'gerencia' }
+          { name: '🔐 Baú da Gerência', value: 'gerencia' },
+          { name: '⚙️ Painel da Gerência', value: 'painel' }
         )
     ),
 
   async execute(interaction, client) {
     const tipo = interaction.options.getString('tipo');
+
+    if (tipo === 'painel') {
+      const canal = client.channels.cache.get(config.channels.painelGerencia);
+      if (!canal) {
+        return interaction.reply({ content: '❌ Canal do painel da gerência não encontrado.', flags: 64 });
+      }
+
+      const row = new ActionRowBuilder().addComponents(
+        new ButtonBuilder()
+          .setCustomId('ger_adicionar_item')
+          .setLabel('➕ Adicionar Item')
+          .setStyle(ButtonStyle.Success),
+        new ButtonBuilder()
+          .setCustomId('ger_remover_item')
+          .setLabel('➖ Remover Item')
+          .setStyle(ButtonStyle.Danger),
+        new ButtonBuilder()
+          .setCustomId('ger_zerar_bau')
+          .setLabel('🗑️ Zerar Baú')
+          .setStyle(ButtonStyle.Secondary),
+        new ButtonBuilder()
+          .setCustomId('ger_ver_logs')
+          .setLabel('📋 Ver Logs')
+          .setStyle(ButtonStyle.Primary)
+      );
+
+      await canal.send({ embeds: [embedGerencia()], components: [row] });
+      return interaction.reply({ content: '✅ Painel da gerência enviado!', flags: 64 });
+    }
+
+    const canalId = tipo === 'gerencia' ? config.channels.bauGerencia : config.channels.bauMembros;
+    const canal = client.channels.cache.get(canalId);
+    if (!canal) {
+      return interaction.reply({ content: '❌ Canal não encontrado.', flags: 64 });
+    }
 
     const row = new ActionRowBuilder().addComponents(
       new ButtonBuilder()
@@ -33,18 +70,7 @@ module.exports = {
         .setStyle(ButtonStyle.Primary)
     );
 
-    await interaction.reply({
-      content: '✅ Mensagem fixa enviada!',
-      flags: 64
-    });
-
-    const canalId = tipo === 'gerencia'
-      ? interaction.client.channels.cache.get(require('../config.json').channels.bauGerencia)
-      : interaction.client.channels.cache.get(require('../config.json').channels.bauMembros);
-
-    await canalId.send({
-      embeds: [embedMenuPrincipal(tipo)],
-      components: [row]
-    });
+    await canal.send({ embeds: [embedMenuPrincipal(tipo)], components: [row] });
+    return interaction.reply({ content: '✅ Mensagem fixa enviada!', flags: 64 });
   }
 };

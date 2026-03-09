@@ -8,13 +8,12 @@ module.exports = {
   async execute(interaction, client) {
     const [, acao, tipo, categoriaId] = interaction.customId.split(':');
     const itemId = interaction.values[0];
-
-    const itens = getItensDaCategoria(tipo, categoriaId);
+    const itens = getItensDaCategoria(categoriaId);
     const item = itens.find(i => i.id === itemId);
 
     const modal = new ModalBuilder()
       .setCustomId(`bau_quantidade:${acao}:${tipo}:${categoriaId}:${itemId}`)
-      .setTitle(`${acao === 'adicionar' ? '📥 Adicionar' : '📤 Remover'} — ${item.nome}`);
+      .setTitle(`${acao === 'adicionar' ? 'Adicionar' : 'Remover'} — ${item.nome}`);
 
     const input = new TextInputBuilder()
       .setCustomId('quantidade')
@@ -26,7 +25,6 @@ module.exports = {
       .setMaxLength(10);
 
     modal.addComponents(new ActionRowBuilder().addComponents(input));
-
     return interaction.showModal(modal);
   }
 };

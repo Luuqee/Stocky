@@ -13,20 +13,17 @@ module.exports = {
     if (acao === 'ger_adicionar_item') {
       const select = new StringSelectMenuBuilder()
         .setCustomId('ger_cat_adicionar')
-        .setPlaceholder('Selecione o baú e categoria...')
-        .addOptions([
-          ...getCategorias('membros').map(cat => ({
-            label: `[Membros] ${cat.nome}`,
-            value: `membros:${cat.id}`
-          })),
-          ...getCategorias('gerencia').map(cat => ({
-            label: `[Gerência] ${cat.nome}`,
-            value: `gerencia:${cat.id}`
+        .setPlaceholder('Selecione a categoria...')
+        .addOptions(
+          getCategorias().map(cat => ({
+            label: cat.nome,
+            value: cat.id,
+            emoji: cat.emoji
           }))
-        ]);
+        );
 
       return interaction.editReply({
-        embeds: [embedGerencia().setDescription('> Selecione em qual baú e categoria deseja adicionar o item:')],
+        embeds: [embedGerencia().setDescription('> Selecione a categoria do novo item:')],
         components: [new ActionRowBuilder().addComponents(select)]
       });
     }
@@ -34,20 +31,17 @@ module.exports = {
     if (acao === 'ger_remover_item') {
       const select = new StringSelectMenuBuilder()
         .setCustomId('ger_cat_remover')
-        .setPlaceholder('Selecione o baú e categoria...')
-        .addOptions([
-          ...getCategorias('membros').map(cat => ({
-            label: `[Membros] ${cat.nome}`,
-            value: `membros:${cat.id}`
-          })),
-          ...getCategorias('gerencia').map(cat => ({
-            label: `[Gerência] ${cat.nome}`,
-            value: `gerencia:${cat.id}`
+        .setPlaceholder('Selecione a categoria...')
+        .addOptions(
+          getCategorias().map(cat => ({
+            label: cat.nome,
+            value: cat.id,
+            emoji: cat.emoji
           }))
-        ]);
+        );
 
       return interaction.editReply({
-        embeds: [embedGerencia().setDescription('> Selecione em qual baú e categoria deseja remover o item:')],
+        embeds: [embedGerencia().setDescription('> Selecione a categoria do item que deseja remover:')],
         components: [new ActionRowBuilder().addComponents(select)]
       });
     }

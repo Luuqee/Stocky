@@ -41,9 +41,9 @@ module.exports = {
       return;
     }
 
-    const itens = getItensDaCategoria(tipo, categoriaId);
+    const itens = getItensDaCategoria(categoriaId);
     const item = itens.find(i => i.id === itemId);
-    const categorias = getCategorias(tipo);
+    const categorias = getCategorias();
     const categoria = categorias.find(c => c.id === categoriaId);
 
     if (!item || !categoria) {
@@ -61,7 +61,7 @@ module.exports = {
     let novaQtd;
 
     if (acao === 'adicionar') {
-      novaQtd = adicionarAoBau(tipo, categoriaId, itemId, quantidade, item.nome, categoria.nome, item.emoji);
+      novaQtd = adicionarAoBau(tipo, categoriaId, itemId, quantidade, item.nome, categoria.nome);
       await interaction.reply({
         embeds: [embedSucesso(
           'Item adicionado!',
@@ -101,7 +101,7 @@ module.exports = {
       acao,
       usuarioId: interaction.user.id,
       usuarioTag: interaction.user.tag,
-      item: { id: itemId, nome: item.nome, emoji: item.emoji },
+      item: { id: itemId, nome: item.nome },
       categoria: categoria.nome,
       quantidade,
       novaQtd

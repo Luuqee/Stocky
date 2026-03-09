@@ -4,8 +4,7 @@ const path = require('path');
 const DATA_DIR = path.join(__dirname, '..', 'data');
 const BAU_MEMBROS_FILE = path.join(DATA_DIR, 'bau-membros.json');
 const BAU_GERENCIA_FILE = path.join(DATA_DIR, 'bau-gerencia.json');
-const ITEMS_FILE = path.join(DATA_DIR, 'items-membros.json');
-const ITEMS_GERENCIA_FILE = path.join(DATA_DIR, 'items-gerencia.json');
+const ITEMS_FILE = path.join(DATA_DIR, 'items.json');
 const LOGS_MEMBROS_FILE = path.join(DATA_DIR, 'logs-membros.json');
 const LOGS_GERENCIA_FILE = path.join(DATA_DIR, 'logs-gerencia.json');
 
@@ -31,91 +30,65 @@ const CATALOGO_PADRAO = {
   medicamentos: {
     nome: "Medicamentos", emoji: "💊",
     items: [
-      { id: "bandagem", nome: "Bandagem", emoji: "🩹" },
-      { id: "gaze", nome: "Gaze", emoji: "🩻" },
-      { id: "adrenalina", nome: "Adrenalina", emoji: "💉" }
+      { id: "bandagem", nome: "Bandagem" },
+      { id: "gaze", nome: "Gaze" },
+      { id: "adrenalina", nome: "Adrenalina" }
     ]
   },
   armas: {
     nome: "Armas", emoji: "🔫",
     items: [
-      { id: "colt", nome: "Colt", emoji: "🔫" },
-      { id: "usp", nome: "USP", emoji: "🔫" },
-      { id: "desert", nome: "Desert Eagle", emoji: "🔫" }
+      { id: "colt", nome: "Colt" },
+      { id: "usp", nome: "USP" },
+      { id: "desert", nome: "Desert Eagle" },
+      { id: "ak_47", nome: "AK 47" }
     ]
   },
   coletesemuni: {
     nome: "Coletes e Munição", emoji: "🦺",
     items: [
-      { id: "colete", nome: "Colete", emoji: "🦺" },
-      { id: "colete_danificado", nome: "Colete Danificado", emoji: "🪖" },
-      { id: "muni_9mm", nome: "Munição 9MM", emoji: "🔶" },
-      { id: "muni_45acp", nome: "Munição .45 ACP", emoji: "🟠" },
-      { id: "muni_50", nome: "Munição .50", emoji: "🔴" }
+      { id: "colete", nome: "Colete" },
+      { id: "colete_danificado", nome: "Colete Danificado" },
+      { id: "muni_9mm", nome: "Munição 9MM" },
+      { id: "muni_45acp", nome: "Munição .45 ACP" },
+      { id: "muni_50", nome: "Munição .50" },
+      { id: "muni_50ae", nome: "Munição .50 AE" }
     ]
   },
   materiais: {
     nome: "Materiais", emoji: "🪛",
     items: [
-      { id: "laptop", nome: "Laptop", emoji: "💻" },
-      { id: "caixa_polvora", nome: "Caixa de Pólvora", emoji: "📦" },
-      { id: "sulfato_bario", nome: "Sulfato de Bário", emoji: "🧪" },
-      { id: "alcool_gel", nome: "Álcool em Gel", emoji: "🧴" },
-      { id: "sabonete", nome: "Sabonete", emoji: "🧼" },
-      { id: "pecas_roupas", nome: "Peças de Roupas", emoji: "👕" },
-      { id: "kit_eletronico", nome: "Kit Eletrônico", emoji: "💡" },
-      { id: "cobre", nome: "Cobre", emoji: "🟤" },
-      { id: "plastico", nome: "Plástico", emoji: "🧱" },
-      { id: "sucata_metal", nome: "Sucata de Metal", emoji: "🔩" },
-      { id: "aluminio", nome: "Alumínio", emoji: "⚙️" },
-      { id: "borracha", nome: "Borracha", emoji: "⚫" }
+      { id: "laptop", nome: "Laptop" },
+      { id: "caixa_polvora", nome: "Caixa de Pólvora" },
+      { id: "sulfato_bario", nome: "Sulfato de Bário" },
+      { id: "alcool_gel", nome: "Álcool em Gel" },
+      { id: "sabonete", nome: "Sabonete" },
+      { id: "pecas_roupas", nome: "Peças de Roupas" },
+      { id: "kit_eletronico", nome: "Kit Eletrônico" },
+      { id: "cobre", nome: "Cobre" },
+      { id: "plastico", nome: "Plástico" },
+      { id: "sucata_metal", nome: "Sucata de Metal" },
+      { id: "aluminio", nome: "Alumínio" },
+      { id: "borracha", nome: "Borracha" }
     ]
   },
   drogas: {
     nome: "Drogas", emoji: "🌿",
     items: [
-      { id: "cocaina", nome: "Cocaína", emoji: "❄️" },
-      { id: "lsd", nome: "LSD", emoji: "🔮" },
-      { id: "meta", nome: "Meta", emoji: "💎" }
-    ]
-  }
-};
-
-const CATALOGO_GERENCIA_PADRAO = {
-  armas: {
-    nome: "Armas e Munição", emoji: "🔫",
-    items: [
-      { id: "colt", nome: "Colt", emoji: "🔫" },
-      { id: "usp", nome: "USP", emoji: "🔫" },
-      { id: "desert", nome: "Desert Eagle", emoji: "🔫" },
-      { id: "muni_9mm", nome: "Munição 9MM", emoji: "🔶" },
-      { id: "muni_45acp", nome: "Munição .45 ACP", emoji: "🟠" },
-      { id: "muni_50ae", nome: "Munição .50 AE", emoji: "🔴" }
-    ]
-  },
-  drogas: {
-    nome: "Drogas", emoji: "🌿",
-    items: [
-      { id: "meta", nome: "Meta", emoji: "💎" },
-      { id: "lsd", nome: "LSD", emoji: "🔮" }
+      { id: "cocaina", nome: "Cocaína" },
+      { id: "lsd", nome: "LSD" },
+      { id: "meta", nome: "Meta" }
     ]
   },
   extras: {
     nome: "Extras", emoji: "📦",
     items: [
-      { id: "fichas_cassino", nome: "Fichas de Cassino", emoji: "🎰" },
-      { id: "pecas_roupas", nome: "Peças de Roupas", emoji: "👕" },
-      { id: "colete", nome: "Colete", emoji: "🦺" },
-      { id: "agulha", nome: "Agulha", emoji: "🪡" },
-      { id: "linha", nome: "Linha", emoji: "🧵" },
-      { id: "resina", nome: "Resina", emoji: "🫙" },
-      { id: "tesoura", nome: "Tesoura", emoji: "✂️" }
-    ]
-  },
-  dinheiro: {
-    nome: "Dinheiro", emoji: "💰",
-    items: [
-      { id: "notas_marcadas", nome: "Notas Marcadas", emoji: "💵" }
+      { id: "fichas_cassino", nome: "Fichas de Cassino" },
+      { id: "agulha", nome: "Agulha" },
+      { id: "linha", nome: "Linha" },
+      { id: "resina", nome: "Resina" },
+      { id: "tesoura", nome: "Tesoura" },
+      { id: "notas_marcadas", nome: "Notas Marcadas" }
     ]
   }
 };
@@ -126,12 +99,12 @@ function getBau(tipo) {
   return readJSON(tipo === 'gerencia' ? BAU_GERENCIA_FILE : BAU_MEMBROS_FILE, {});
 }
 
-function adicionarAoBau(tipo, categoriaId, itemId, quantidade, nomeItem, nomeCategoria, emojiItem) {
+function adicionarAoBau(tipo, categoriaId, itemId, quantidade, nomeItem, nomeCategoria) {
   const file = tipo === 'gerencia' ? BAU_GERENCIA_FILE : BAU_MEMBROS_FILE;
   const bau = readJSON(file, {});
   const key = `${categoriaId}:${itemId}`;
   if (!bau[key]) {
-    bau[key] = { nome: nomeItem, categoria: nomeCategoria, categoriaId, quantidade: 0, emoji: emojiItem };
+    bau[key] = { nome: nomeItem, categoria: nomeCategoria, categoriaId, quantidade: 0 };
   }
   bau[key].quantidade += quantidade;
   writeJSON(file, bau);
@@ -158,40 +131,37 @@ function zerarBau(tipo) {
 
 // ─── CATÁLOGO ─────────────────────────────────────────────────────────────────
 
-function getCatalogo(tipo) {
-  if (tipo === 'gerencia') return readJSON(ITEMS_GERENCIA_FILE, CATALOGO_GERENCIA_PADRAO);
+function getCatalogo() {
   return readJSON(ITEMS_FILE, CATALOGO_PADRAO);
 }
 
-function getCategorias(tipo) {
-  const catalogo = getCatalogo(tipo);
+function getCategorias() {
+  const catalogo = getCatalogo();
   return Object.entries(catalogo).map(([id, cat]) => ({ id, nome: cat.nome, emoji: cat.emoji }));
 }
 
-function getItensDaCategoria(tipo, categoriaId) {
-  const catalogo = getCatalogo(tipo);
+function getItensDaCategoria(categoriaId) {
+  const catalogo = getCatalogo();
   return catalogo[categoriaId] ? catalogo[categoriaId].items : [];
 }
 
-function adicionarItemAoCatalogo(tipo, categoriaId, itemId, nomeItem, emojiItem) {
-  const file = tipo === 'gerencia' ? ITEMS_GERENCIA_FILE : ITEMS_FILE;
-  const catalogo = getCatalogo(tipo);
+function adicionarItemAoCatalogo(categoriaId, itemId, nomeItem) {
+  const catalogo = getCatalogo();
   if (!catalogo[categoriaId]) return { sucesso: false, motivo: 'Categoria não encontrada.' };
   const jaExiste = catalogo[categoriaId].items.find(i => i.id === itemId);
   if (jaExiste) return { sucesso: false, motivo: 'Item já existe nessa categoria.' };
-  catalogo[categoriaId].items.push({ id: itemId, nome: nomeItem, emoji: emojiItem });
-  writeJSON(file, catalogo);
+  catalogo[categoriaId].items.push({ id: itemId, nome: nomeItem });
+  writeJSON(ITEMS_FILE, catalogo);
   return { sucesso: true };
 }
 
-function removerItemDoCatalogo(tipo, categoriaId, itemId) {
-  const file = tipo === 'gerencia' ? ITEMS_GERENCIA_FILE : ITEMS_FILE;
-  const catalogo = getCatalogo(tipo);
+function removerItemDoCatalogo(categoriaId, itemId) {
+  const catalogo = getCatalogo();
   if (!catalogo[categoriaId]) return { sucesso: false, motivo: 'Categoria não encontrada.' };
   const idx = catalogo[categoriaId].items.findIndex(i => i.id === itemId);
   if (idx === -1) return { sucesso: false, motivo: 'Item não encontrado no catálogo.' };
   catalogo[categoriaId].items.splice(idx, 1);
-  writeJSON(file, catalogo);
+  writeJSON(ITEMS_FILE, catalogo);
   return { sucesso: true };
 }
 

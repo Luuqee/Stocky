@@ -63,7 +63,7 @@ function embedLog(acao, usuario, item, categoria, quantidade, novaQtd, tipoBau) 
     .addFields(
       { name: '🏴 Baú', value: bau, inline: false },
       { name: '👤 Responsável', value: `<@${usuario.id}> — ${usuario.tag}`, inline: true },
-      { name: '📦 Item', value: `${item.emoji} ${item.nome}`, inline: true },
+      { name: '📦 Item', value: item.nome, inline: true },
       { name: '📂 Categoria', value: categoria, inline: true },
       { name: isAdd ? '➕ Qtd. Adicionada' : '➖ Qtd. Retirada', value: `**${quantidade}**`, inline: true },
       { name: '📊 Saldo Atual', value: `**${novaQtd}**`, inline: true }
@@ -78,8 +78,10 @@ function embedInventario(bau, tipo) {
 
   const porCategoria = {};
   for (const item of Object.values(bau)) {
-    if (!porCategoria[item.categoria]) porCategoria[item.categoria] = [];
-    porCategoria[item.categoria].push(item);
+    if (!porCategoria[item.categoriaId]) {
+      porCategoria[item.categoriaId] = { nome: item.categoria, itens: [] };
+    }
+    porCategoria[item.categoriaId].itens.push(item);
   }
 
   if (Object.keys(porCategoria).length === 0) {
@@ -87,9 +89,14 @@ function embedInventario(bau, tipo) {
     return embed;
   }
 
-  for (const [categoria, itens] of Object.entries(porCategoria)) {
-    const linhas = itens.map(i => `**${i.nome}** — \`${i.quantidade}\``).join('\n');
-    embed.addFields({ name: `📂 ${categoria}`, value: linhas, inline: false });
+  const { getCategorias } = require('./db');
+  const categorias = getCategorias(tipo);
+
+  for (const [catId, dados] of Object.entries(porCategoria)) {
+    const catInfo = categorias.find(c => c.id === catId);
+    const emojiCat = catInfo ? catInfo.emoji : '📂';
+    const linhas = dados.itens.map(i => `**${i.nome}** — \`${i.quantidade}\``).join('\n');
+    embed.addFields({ name: `${emojiCat} ${dados.nome}`, value: linhas, inline: false });
   }
 
   return embed;
