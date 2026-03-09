@@ -1,6 +1,27 @@
-const { ActionRowBuilder, ModalBuilder, TextInputBuilder, TextInputStyle, StringSelectMenuBuilder } = require('discord.js');
+const { ActionRowBuilder, ModalBuilder, TextInputBuilder, TextInputStyle, StringSelectMenuBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
 const { embedGerencia, embedSucesso, embedErro } = require('../utils/embeds');
 const { getCategorias, getItensDaCategoria, zerarBau, getLogs, removerItemDoCatalogo } = require('../utils/db');
+
+function rowMenuGerencia() {
+  return new ActionRowBuilder().addComponents(
+    new ButtonBuilder()
+      .setCustomId('ger_adicionar_item')
+      .setLabel('➕ Adicionar Item')
+      .setStyle(ButtonStyle.Success),
+    new ButtonBuilder()
+      .setCustomId('ger_remover_item')
+      .setLabel('➖ Remover Item')
+      .setStyle(ButtonStyle.Danger),
+    new ButtonBuilder()
+      .setCustomId('ger_zerar_bau')
+      .setLabel('🗑️ Zerar Baú')
+      .setStyle(ButtonStyle.Secondary),
+    new ButtonBuilder()
+      .setCustomId('ger_ver_logs')
+      .setLabel('📋 Ver Logs')
+      .setStyle(ButtonStyle.Primary)
+  );
+}
 
 module.exports = {
   type: 'select',
@@ -37,7 +58,7 @@ module.exports = {
       if (!itens.length) {
         return interaction.editReply({
           embeds: [embedErro('Sem itens', 'Essa categoria nao possui itens cadastrados.')],
-          components: []
+          components: [rowMenuGerencia()]
         });
       }
 
@@ -61,13 +82,13 @@ module.exports = {
       if (!resultado.sucesso) {
         return interaction.editReply({
           embeds: [embedErro('Erro', resultado.motivo)],
-          components: []
+          components: [rowMenuGerencia()]
         });
       }
 
       return interaction.editReply({
         embeds: [embedSucesso('Item removido!', 'Item removido do catalogo com sucesso.')],
-        components: []
+        components: [rowMenuGerencia()]
       });
     }
 
@@ -82,7 +103,7 @@ module.exports = {
       }
       return interaction.editReply({
         embeds: [embedSucesso('Bau zerado!', 'O bau foi resetado com sucesso.')],
-        components: []
+        components: [rowMenuGerencia()]
       });
     }
 
@@ -94,7 +115,7 @@ module.exports = {
       if (!logs.length) {
         return interaction.editReply({
           embeds: [embedErro('Sem logs', 'Nenhuma movimentacao registrada ainda.')],
-          components: []
+          components: [rowMenuGerencia()]
         });
       }
 
@@ -115,7 +136,7 @@ module.exports = {
 
       return interaction.editReply({
         embeds: [embed],
-        components: []
+        components: [rowMenuGerencia()]
       });
     }
   }

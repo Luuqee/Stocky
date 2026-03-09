@@ -3,6 +3,23 @@ const { embedSucesso, embedErro, embedLog, embedInventario, embedMenuPrincipal }
 const { adicionarAoBau, removerDoBau, getItensDaCategoria, getCategorias, addLog, getBau } = require('../utils/db');
 const config = require('../config.json');
 
+function rowMenuBau(tipo) {
+  return new ActionRowBuilder().addComponents(
+    new ButtonBuilder()
+      .setCustomId(`bau_adicionar:${tipo}`)
+      .setLabel('📥 Adicionar')
+      .setStyle(ButtonStyle.Success),
+    new ButtonBuilder()
+      .setCustomId(`bau_remover:${tipo}`)
+      .setLabel('📤 Remover')
+      .setStyle(ButtonStyle.Danger),
+    new ButtonBuilder()
+      .setCustomId(`bau_estoque:${tipo}`)
+      .setLabel('📋 Ver Estoque')
+      .setStyle(ButtonStyle.Primary)
+  );
+}
+
 module.exports = {
   type: 'modal',
   customIds: ['bau_quantidade'],
@@ -13,10 +30,15 @@ module.exports = {
     const quantidade = parseInt(quantidadeRaw);
 
     if (isNaN(quantidade) || quantidade <= 0) {
-      return interaction.reply({
+      await interaction.reply({
         embeds: [embedErro('Quantidade inválida', 'Digite um número inteiro maior que zero.')],
         flags: 64
       });
+      await interaction.message.edit({
+        embeds: [embedMenuPrincipal(tipo)],
+        components: [rowMenuBau(tipo)]
+      });
+      return;
     }
 
     const itens = getItensDaCategoria(tipo, categoriaId);
@@ -25,26 +47,16 @@ module.exports = {
     const categoria = categorias.find(c => c.id === categoriaId);
 
     if (!item || !categoria) {
-      return interaction.reply({
+      await interaction.reply({
         embeds: [embedErro('Erro', 'Item ou categoria não encontrado.')],
         flags: 64
       });
+      await interaction.message.edit({
+        embeds: [embedMenuPrincipal(tipo)],
+        components: [rowMenuBau(tipo)]
+      });
+      return;
     }
-
-    const rowMenu = new ActionRowBuilder().addComponents(
-      new ButtonBuilder()
-        .setCustomId(`bau_adicionar:${tipo}`)
-        .setLabel('📥 Adicionar')
-        .setStyle(ButtonStyle.Success),
-      new ButtonBuilder()
-        .setCustomId(`bau_remover:${tipo}`)
-        .setLabel('📤 Remover')
-        .setStyle(ButtonStyle.Danger),
-      new ButtonBuilder()
-        .setCustomId(`bau_estoque:${tipo}`)
-        .setLabel('📋 Ver Estoque')
-        .setStyle(ButtonStyle.Primary)
-    );
 
     let novaQtd;
 
@@ -53,35 +65,38 @@ module.exports = {
       await interaction.reply({
         embeds: [embedSucesso(
           'Item adicionado!',
-          `${item.emoji} **${item.nome}** — adicionado **${quantidade}** unidade(s).\nSaldo atual: **${novaQtd}**`
+          `**${item.nome}** — adicionado **${quantidade}** unidade(s).\nSaldo atual: **${novaQtd}**`
         )],
         flags: 64
       });
     } else {
       const resultado = removerDoBau(tipo, categoriaId, itemId, quantidade);
       if (!resultado.sucesso) {
-        return interaction.reply({
+        await interaction.reply({
           embeds: [embedErro('Estoque insuficiente', resultado.motivo)],
           flags: 64
         });
+        await interaction.message.edit({
+          embeds: [embedMenuPrincipal(tipo)],
+          components: [rowMenuBau(tipo)]
+        });
+        return;
       }
       novaQtd = resultado.novaQtd;
       await interaction.reply({
         embeds: [embedSucesso(
           'Item removido!',
-          `${item.emoji} **${item.nome}** — removido **${quantidade}** unidade(s).\nSaldo atual: **${novaQtd}**`
+          `**${item.nome}** — removido **${quantidade}** unidade(s).\nSaldo atual: **${novaQtd}**`
         )],
         flags: 64
       });
     }
 
-    // ─── VOLTAR AO MENU ───────────────────────────────────────────────────────
     await interaction.message.edit({
       embeds: [embedMenuPrincipal(tipo)],
-      components: [rowMenu]
+      components: [rowMenuBau(tipo)]
     });
 
-    // ─── LOG ──────────────────────────────────────────────────────────────────
     addLog(tipo, {
       acao,
       usuarioId: interaction.user.id,
@@ -100,7 +115,6 @@ module.exports = {
       });
     }
 
-    // ─── ATUALIZAR INVENTÁRIO ─────────────────────────────────────────────────
     const canalInvId = tipo === 'gerencia' ? config.channels.inventarioGerencia : config.channels.inventarioMembros;
     const canalInv = client.channels.cache.get(canalInvId);
     if (canalInv) {
