@@ -1,6 +1,6 @@
-const { embedSucesso, embedErro, embedLog } = require('../utils/embeds');
+const { ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
+const { embedSucesso, embedErro, embedLog, embedInventario, embedMenuPrincipal } = require('../utils/embeds');
 const { adicionarAoBau, removerDoBau, getItensDaCategoria, getCategorias, addLog, getBau } = require('../utils/db');
-const { embedInventario } = require('../utils/embeds');
 const config = require('../config.json');
 
 module.exports = {
@@ -31,6 +31,21 @@ module.exports = {
       });
     }
 
+    const rowMenu = new ActionRowBuilder().addComponents(
+      new ButtonBuilder()
+        .setCustomId(`bau_adicionar:${tipo}`)
+        .setLabel('📥 Adicionar')
+        .setStyle(ButtonStyle.Success),
+      new ButtonBuilder()
+        .setCustomId(`bau_remover:${tipo}`)
+        .setLabel('📤 Remover')
+        .setStyle(ButtonStyle.Danger),
+      new ButtonBuilder()
+        .setCustomId(`bau_estoque:${tipo}`)
+        .setLabel('📋 Ver Estoque')
+        .setStyle(ButtonStyle.Primary)
+    );
+
     let novaQtd;
 
     if (acao === 'adicionar') {
@@ -59,6 +74,12 @@ module.exports = {
         flags: 64
       });
     }
+
+    // ─── VOLTAR AO MENU ───────────────────────────────────────────────────────
+    await interaction.message.edit({
+      embeds: [embedMenuPrincipal(tipo)],
+      components: [rowMenu]
+    });
 
     // ─── LOG ──────────────────────────────────────────────────────────────────
     addLog(tipo, {

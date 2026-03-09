@@ -1,6 +1,6 @@
-const { ActionRowBuilder, StringSelectMenuBuilder } = require('discord.js');
-const { embedSelecionarCategoria, embedSelecionarItem, embedInventario } = require('../utils/embeds');
-const { getCategorias, getItensDaCategoria, getBau } = require('../utils/db');
+const { ActionRowBuilder, StringSelectMenuBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
+const { embedSelecionarCategoria, embedInventario, embedMenuPrincipal } = require('../utils/embeds');
+const { getCategorias, getBau } = require('../utils/db');
 
 module.exports = {
   type: 'button',
@@ -9,16 +9,31 @@ module.exports = {
   async execute(interaction, client) {
     const [acao, tipo] = interaction.customId.split(':');
 
+    const rowMenu = new ActionRowBuilder().addComponents(
+      new ButtonBuilder()
+        .setCustomId(`bau_adicionar:${tipo}`)
+        .setLabel('📥 Adicionar')
+        .setStyle(ButtonStyle.Success),
+      new ButtonBuilder()
+        .setCustomId(`bau_remover:${tipo}`)
+        .setLabel('📤 Remover')
+        .setStyle(ButtonStyle.Danger),
+      new ButtonBuilder()
+        .setCustomId(`bau_estoque:${tipo}`)
+        .setLabel('📋 Ver Estoque')
+        .setStyle(ButtonStyle.Primary)
+    );
+
     // ─── VER ESTOQUE ──────────────────────────────────────────────────────────
     if (acao === 'bau_estoque') {
       const bau = getBau(tipo);
-      return interaction.update({
+      return interaction.reply({
         embeds: [embedInventario(bau, tipo)],
-        components: []
+        flags: 64
       });
     }
 
-    // ─── ADICIONAR / REMOVER — SELECIONAR CATEGORIA ───────────────────────────
+    // ─── ADICIONAR / REMOVER ──────────────────────────────────────────────────
     const acaoNome = acao === 'bau_adicionar' ? 'adicionar' : 'remover';
     const categorias = getCategorias(tipo);
 
@@ -33,11 +48,11 @@ module.exports = {
         }))
       );
 
-    const row = new ActionRowBuilder().addComponents(select);
+    const rowSelect = new ActionRowBuilder().addComponents(select);
 
     return interaction.update({
       embeds: [embedSelecionarCategoria(tipo, acaoNome)],
-      components: [row]
+      components: [rowSelect]
     });
   }
 };
