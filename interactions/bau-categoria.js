@@ -7,6 +7,7 @@ module.exports = {
   customIds: ['bau_categoria'],
 
   async execute(interaction, client) {
+    await interaction.deferUpdate();
     const [, acao, tipo] = interaction.customId.split(':');
     const categoriaId = interaction.values[0];
 
@@ -15,7 +16,7 @@ module.exports = {
     const itens = getItensDaCategoria(tipo, categoriaId);
 
     if (!itens.length) {
-      return interaction.update({
+      return interaction.editReply({
         content: '❌ Nenhum item encontrado nessa categoria.',
         embeds: [],
         components: []
@@ -28,16 +29,13 @@ module.exports = {
       .addOptions(
         itens.map(item => ({
           label: item.nome,
-          value: item.id,
-          emoji: item.emoji
+          value: item.id
         }))
       );
 
-    const row = new ActionRowBuilder().addComponents(select);
-
-    return interaction.update({
+    return interaction.editReply({
       embeds: [embedSelecionarItem(acao, categoria.nome, categoria.emoji)],
-      components: [row]
+      components: [new ActionRowBuilder().addComponents(select)]
     });
   }
 };

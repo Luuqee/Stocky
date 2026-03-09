@@ -41,6 +41,9 @@ for (const file of interactionFiles) {
 
 client.once(Events.ClientReady, () => {
   console.log(`✅ Stocky online como ${client.user.tag}`);
+  console.log('Buttons:', [...client.buttons.keys()]);
+  console.log('Selects:', [...client.selects.keys()]);
+  console.log('Modals:', [...client.modals.keys()]);
 });
 
 client.on(Events.InteractionCreate, async (interaction) => {
@@ -51,32 +54,38 @@ client.on(Events.InteractionCreate, async (interaction) => {
       await command.execute(interaction, client);
     }
     else if (interaction.isButton()) {
+      console.log('BUTTON RECEBIDO:', interaction.customId);
       for (const [id, handler] of client.buttons) {
         if (interaction.customId === id || interaction.customId.startsWith(id + ':')) {
           await handler.execute(interaction, client);
           return;
         }
       }
+      console.log('NENHUM HANDLER ENCONTRADO PARA BUTTON:', interaction.customId);
     }
     else if (interaction.isStringSelectMenu()) {
+      console.log('SELECT RECEBIDO:', interaction.customId);
       for (const [id, handler] of client.selects) {
         if (interaction.customId === id || interaction.customId.startsWith(id + ':')) {
           await handler.execute(interaction, client);
           return;
         }
       }
+      console.log('NENHUM HANDLER ENCONTRADO PARA SELECT:', interaction.customId);
     }
     else if (interaction.isModalSubmit()) {
+      console.log('MODAL RECEBIDO:', interaction.customId);
       for (const [id, handler] of client.modals) {
         if (interaction.customId === id || interaction.customId.startsWith(id + ':')) {
           await handler.execute(interaction, client);
           return;
         }
       }
+      console.log('NENHUM HANDLER ENCONTRADO PARA MODAL:', interaction.customId);
     }
   } catch (err) {
     console.error('Erro na interação:', err);
-    const msg = { content: '❌ Ocorreu um erro ao processar essa interação.', ephemeral: true };
+    const msg = { content: '❌ Ocorreu um erro ao processar essa interação.', flags: 64 };
     if (interaction.replied || interaction.deferred) {
       await interaction.followUp(msg).catch(() => {});
     } else {

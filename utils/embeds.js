@@ -88,7 +88,7 @@ function embedInventario(bau, tipo) {
   }
 
   for (const [categoria, itens] of Object.entries(porCategoria)) {
-    const linhas = itens.map(i => `${i.emoji} **${i.nome}** — \`${i.quantidade}\``).join('\n');
+    const linhas = itens.map(i => `**${i.nome}** — \`${i.quantidade}\``).join('\n');
     embed.addFields({ name: `📂 ${categoria}`, value: linhas, inline: false });
   }
 
