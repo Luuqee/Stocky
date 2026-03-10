@@ -90,12 +90,13 @@ module.exports = {
     const canalInv = client.channels.cache.get(canalInvId);
     if (canalInv) {
       const bau = await getBau(tipo);
+      const inventarioEmbed = await embedInventario(bau, tipo);
       const msgs = await canalInv.messages.fetch({ limit: 10 });
       const msgBot = msgs.find(m => m.author.id === client.user.id);
       if (msgBot) {
-        await msgBot.edit({ embeds: [embedInventario(bau, tipo)] });
+        await msgBot.edit({ embeds: [inventarioEmbed] });
       } else {
-        await canalInv.send({ embeds: [embedInventario(bau, tipo)] });
+        await canalInv.send({ embeds: [inventarioEmbed] });
       }
     }
   }
