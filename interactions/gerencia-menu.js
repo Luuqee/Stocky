@@ -1,6 +1,6 @@
 const { ActionRowBuilder, StringSelectMenuBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
-const { embedGerencia, embedMenuPrincipal } = require('../utils/embeds');
-const { getCategorias } = require('../utils/db');
+const { embedGerencia } = require('../utils/embeds');
+const { getCategorias, getBau, getItensDaCategoria } = require('../utils/db');
 
 function rowMenuGerencia() {
   return new ActionRowBuilder().addComponents(
@@ -23,6 +23,19 @@ function rowMenuGerencia() {
   );
 }
 
+function rowMenuGerencia2() {
+  return new ActionRowBuilder().addComponents(
+    new ButtonBuilder()
+      .setCustomId('ger_ajustar_membros')
+      .setLabel('📝 Ajustar Baú Membros')
+      .setStyle(ButtonStyle.Secondary),
+    new ButtonBuilder()
+      .setCustomId('ger_ajustar_gerencia')
+      .setLabel('📝 Ajustar Baú Gerência')
+      .setStyle(ButtonStyle.Secondary)
+  );
+}
+
 function rowCancelar() {
   return new ActionRowBuilder().addComponents(
     new ButtonBuilder()
@@ -34,7 +47,7 @@ function rowCancelar() {
 
 module.exports = {
   type: 'button',
-  customIds: ['ger_adicionar_item', 'ger_remover_item', 'ger_zerar_bau', 'ger_ver_logs', 'ger_cancelar'],
+  customIds: ['ger_adicionar_item', 'ger_remover_item', 'ger_zerar_bau', 'ger_ver_logs', 'ger_cancelar', 'ger_ajustar_membros', 'ger_ajustar_gerencia'],
 
   async execute(interaction, client) {
     await interaction.deferUpdate();
@@ -43,7 +56,53 @@ module.exports = {
     if (acao === 'ger_cancelar') {
       return interaction.editReply({
         embeds: [embedGerencia()],
-        components: [rowMenuGerencia()]
+        components: [rowMenuGerencia(), rowMenuGerencia2()]
+      });
+    }
+
+    if (acao === 'ger_ajustar_membros' || acao === 'ger_ajustar_gerencia') {
+      const tipo = acao === 'ger_ajustar_membros' ? 'membros' : 'gerencia';
+      const bau = await getBau(tipo);
+      const categorias = await getCategorias();
+
+      let texto = '';
+      for (const cat of categorias) {
+        const itensNoBau = Object.entries(bau).filter(([key]) => key.startsWith(cat.id + '__'));
+        if (itensNoBau.length === 0) continue;
+        texto += `# ${cat.nome}\n`;
+        for (const [key, item] of itensNoBau) {
+          texto += `${item.nome}:${item.quantidade}\n`;
+        }
+        texto += '\n';
+      }
+
+      if (!texto) texto = 'Baú vazio. Adicione itens primeiro.';
+
+      await interaction.user.send({
+        content: `📋 **Inventário atual — Baú dos ${tipo === 'membros' ? 'Membros' : 'Gerência'}**\n\nCopie o texto abaixo, edite os números e cole no modal:\n\`\`\`\n${texto}\`\`\``,
+      });
+
+      const { ModalBuilder, TextInputBuilder, TextInputStyle } = require('discord.js');
+      const modal = new ModalBuilder()
+        .setCustomId(`ger_modal_ajustar:${tipo}`)
+        .setTitle(`Ajustar Inventário — ${tipo === 'membros' ? 'Membros' : 'Gerência'}`);
+
+      modal.addComponents(
+        new ActionRowBuilder().addComponents(
+          new TextInputBuilder()
+            .setCustomId('inventario')
+            .setLabel('Cole o inventário editado aqui')
+            .setStyle(TextInputStyle.Paragraph)
+            .setPlaceholder('Gaze:120\nBandagem:97\n...')
+            .setRequired(true)
+            .setMaxLength(4000)
+        )
+      );
+
+      return interaction.followUp({ content: '📩 Verifique seu DM com o inventário atual!', flags: 64 }).then(() => {
+        interaction.showModal(modal);
+      }).catch(() => {
+        interaction.showModal(modal);
       });
     }
 
