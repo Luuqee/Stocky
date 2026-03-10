@@ -1,6 +1,7 @@
 const { ActionRowBuilder, ModalBuilder, TextInputBuilder, TextInputStyle, StringSelectMenuBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
 const { embedGerencia, embedSucesso, embedErro, embedInventario } = require('../utils/embeds');
 const { getCategorias, getItensDaCategoria, zerarBau, getLogs, removerItemDoCatalogo, getBau } = require('../utils/db');
+const { getDb } = require('../utils/firebase');
 const config = require('../config.json');
 
 function rowMenuGerencia() {
@@ -29,12 +30,13 @@ async function atualizarInventario(client, tipo) {
   const canalInv = client.channels.cache.get(canalInvId);
   if (!canalInv) return;
   const bau = await getBau(tipo);
+  const inventarioEmbed = await embedInventario(bau, tipo);
   const msgs = await canalInv.messages.fetch({ limit: 10 });
   const msgBot = msgs.find(m => m.author.id === client.user.id);
   if (msgBot) {
-    await msgBot.edit({ embeds: [embedInventario(bau, tipo)] });
+    await msgBot.edit({ embeds: [inventarioEmbed] });
   } else {
-    await canalInv.send({ embeds: [embedInventario(bau, tipo)] });
+    await canalInv.send({ embeds: [inventarioEmbed] });
   }
 }
 
@@ -101,20 +103,18 @@ module.exports = {
         });
       }
 
+      const db = getDb();
       const bauMembros = await getBau('membros');
       const bauGerencia = await getBau('gerencia');
       const key = `${categoriaId}__${itemId}`;
-      const db = require('./firebase') ;
 
       if (bauMembros[key]) {
         delete bauMembros[key];
-        const { getDb } = require('../utils/firebase');
-        await getDb().collection('bau').doc('membros').set(bauMembros);
+        await db.collection('bau').doc('membros').set(bauMembros);
       }
       if (bauGerencia[key]) {
         delete bauGerencia[key];
-        const { getDb } = require('../utils/firebase');
-        await getDb().collection('bau').doc('gerencia').set(bauGerencia);
+        await db.collection('bau').doc('gerencia').set(bauGerencia);
       }
 
       await atualizarInventario(client, 'membros');
