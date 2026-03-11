@@ -84,11 +84,9 @@ module.exports = {
     let descricao = `**${atualizados}** item(s) atualizado(s) com sucesso!`;
     if (erros.length) descricao += `\n\n⚠️ Erros:\n${erros.join('\n')}`;
 
-    await interaction.reply({ embeds: [embedSucesso('Inventário ajustado!', descricao)], flags: 64 });
-
-    await interaction.message.edit({
-      embeds: [embedGerencia()],
-      components: [rowMenuGerencia(), rowMenuGerencia2()]
+    return interaction.reply({
+      embeds: [embedSucesso('Inventário ajustado!', descricao)],
+      flags: 64
     });
   }
 };
