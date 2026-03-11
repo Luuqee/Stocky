@@ -1,4 +1,4 @@
-const { ActionRowBuilder, StringSelectMenuBuilder, ButtonBuilder, ButtonStyle, ModalBuilder, TextInputBuilder, TextInputStyle } = require('discord.js');
+const { ActionRowBuilder, StringSelectMenuBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
 const { embedGerencia } = require('../utils/embeds');
 const { getCategorias, getBau } = require('../utils/db');
 
@@ -49,29 +49,18 @@ module.exports = {
 
       if (!texto) texto = 'Bau vazio.';
 
-      try {
-        await interaction.user.send({
-          content: `📋 **Inventário atual — Baú dos ${tipo === 'membros' ? 'Membros' : 'Gerência'}**\n\nCopie, edite os números e cole no modal:\n\`\`\`\n${texto}\`\`\``
-        });
-      } catch (e) {}
-
-      const modal = new ModalBuilder()
-        .setCustomId(`ger_modal_ajustar:${tipo}`)
-        .setTitle(`Ajustar Inventário — ${tipo === 'membros' ? 'Membros' : 'Gerência'}`);
-
-      modal.addComponents(
-        new ActionRowBuilder().addComponents(
-          new TextInputBuilder()
-            .setCustomId('inventario')
-            .setLabel('Cole o inventário editado aqui')
-            .setStyle(TextInputStyle.Paragraph)
-            .setPlaceholder('Gaze:120\nBandagem:97\n...')
-            .setRequired(true)
-            .setMaxLength(4000)
-        )
+      const rowAbrir = new ActionRowBuilder().addComponents(
+        new ButtonBuilder()
+          .setCustomId(`ger_abrir_modal_ajustar:${tipo}`)
+          .setLabel('✏️ Abrir Modal para Editar')
+          .setStyle(ButtonStyle.Primary)
       );
 
-      return interaction.showModal(modal);
+      return interaction.reply({
+        content: `📋 **Inventário atual — Baú dos ${tipo === 'membros' ? 'Membros' : 'Gerência'}**\n\nAnote as alterações e clique no botão abaixo:\n\`\`\`\n${texto}\`\`\``,
+        components: [rowAbrir],
+        flags: 64
+      });
     }
 
     await interaction.deferUpdate();
